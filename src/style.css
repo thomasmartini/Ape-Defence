@@ -7,7 +7,4 @@ body {
     overflow: hidden;
 }
 
-canvas {
-    /* uncomment this to scale to 100% of the window */
-    /* width:100vw; */
-}
+

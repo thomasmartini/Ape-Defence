@@ -525,8 +525,11 @@ var _monkeyPng = require("./images/monkey.png");
 var _monkeyPngDefault = parcelHelpers.interopDefault(_monkeyPng);
 var _groundPng = require("./images/ground.png");
 var _groundPngDefault = parcelHelpers.interopDefault(_groundPng);
+var _bananaPng = require("./images/banana.png");
+var _bananaPngDefault = parcelHelpers.interopDefault(_bananaPng);
 var _player = require("./player");
 var _ground = require("./ground");
+var _banana = require("./banana");
 class Game {
     grounds = [];
     players = [];
@@ -537,7 +540,7 @@ class Game {
         document.body.appendChild(this.pixi.view);
         this.collide = false;
         this.loader = new _pixiJs.Loader();
-        this.loader.add("backgroundTexture", _backgroundJpgDefault.default).add("monkeyTexture", _monkeyPngDefault.default).add("groundTexture", _groundPngDefault.default);
+        this.loader.add("backgroundTexture", _backgroundJpgDefault.default).add("monkeyTexture", _monkeyPngDefault.default).add("groundTexture", _groundPngDefault.default).add("bananaTexture", _bananaPngDefault.default);
         this.loader.load(()=>this.doneLoading()
         );
     }
@@ -552,6 +555,7 @@ class Game {
         let ground = new _ground.Ground(this.loader.resources["groundTexture"].texture);
         this.grounds.push(ground);
         this.pixi.stage.addChild(ground);
+        let banana = new _banana.Banana(this.loader.resources["bananaTexture"].texture);
         this.pixi.ticker.add(()=>this.update()
         );
     }
@@ -568,7 +572,7 @@ class Game {
 }
 new Game();
 
-},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./images/background.jpg":"1wZMB","./images/monkey.png":"5zA6A","./player":"6OTSH","./images/ground.png":"lpdmr","./ground":"5uyfC"}],"dsYej":[function(require,module,exports) {
+},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./images/background.jpg":"1wZMB","./images/monkey.png":"5zA6A","./player":"6OTSH","./images/ground.png":"lpdmr","./ground":"5uyfC","./banana":"gshE8","./images/banana.png":"kQ7Ne"}],"dsYej":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "utils", ()=>_utils
@@ -37112,12 +37116,61 @@ parcelHelpers.export(exports, "Player", ()=>Player
 );
 var _monkey = require("./monkey");
 class Player extends _monkey.Monkey {
+    xspeed = 0;
+    yspeed = 0;
     constructor(texture){
         super(texture);
+        window.addEventListener("keydown", (e)=>this.onKeyDown(e)
+        );
+        window.addEventListener("keyup", (e)=>this.onKeyUp(e)
+        );
     }
     update(collide) {
-        if (collide == true) this.y += 0;
-        else this.y += 2;
+        this.x += this.xspeed;
+        if (collide) {
+            this.y += 0;
+            this.y += this.yspeed;
+        } else this.y += 5;
+    }
+    shoot() {
+        console.log("shooooot!");
+    }
+    onKeyDown(e) {
+        switch(e.key.toUpperCase()){
+            case " ":
+                this.shoot();
+                break;
+            case "A":
+            case "ARROWLEFT":
+                this.xspeed = -7;
+                break;
+            case "D":
+            case "ARROWRIGHT":
+                this.xspeed = 7;
+                break;
+            case "W":
+            case "ARROWUP":
+                this.yspeed = -7;
+                break;
+        }
+    }
+    onKeyUp(e) {
+        switch(e.key.toUpperCase()){
+            case " ":
+                break;
+            case "A":
+            case "D":
+            case "ARROWLEFT":
+            case "ARROWRIGHT":
+                this.xspeed = 0;
+                break;
+            case "W":
+            case "S":
+            case "ARROWUP":
+            case "ARROWDOWN":
+                this.yspeed = 0;
+                break;
+        }
     }
 }
 
@@ -37132,7 +37185,7 @@ class Monkey extends _pixiJs.Sprite {
         super(texture);
         this.width = 200;
         this.height = 160;
-        this.collide = false;
+        this.x = 500;
     }
 }
 
@@ -37154,6 +37207,21 @@ class Ground extends _pixiJs.Sprite {
     }
 }
 
-},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["fpRtI","edeGs"], "edeGs", "parcelRequirea0e5")
+},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gshE8":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Banana", ()=>Banana
+);
+var _pixiJs = require("pixi.js");
+class Banana extends _pixiJs.Sprite {
+    constructor(texture){
+        super(texture);
+    }
+}
+
+},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kQ7Ne":[function(require,module,exports) {
+module.exports = require('./helpers/bundle-url').getBundleURL('emE5o') + "banana.67ea8802.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}]},["fpRtI","edeGs"], "edeGs", "parcelRequirea0e5")
 
 //# sourceMappingURL=index.901f85c2.js.map

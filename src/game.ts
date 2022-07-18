@@ -2,32 +2,39 @@ import * as PIXI from 'pixi.js'
 import bgImage from "./images/background.jpg"
 import Monkeys from "./images/monkey.png"
 import ground from "./images/ground.png"
+import banana from "./images/banana.png"
 import { Player } from './player'
 import { Ground } from './ground'
+import { Banana } from './banana'
 
 
 export class Game {
     pixi: PIXI.Application 
     background:PIXI.Sprite
     loader:PIXI.Loader
+    banana: Banana
     grounds: Ground[] = []
     players: Player[] = []
     collide: boolean
+ 
 
     public constructor() {
         
         this.pixi = new PIXI.Application({ resizeTo: window })
         document.body.appendChild(this.pixi.view)
         this.collide = false
+
     
         this.loader = new PIXI.Loader()
         this.loader
         .add("backgroundTexture", bgImage)
         .add("monkeyTexture", Monkeys)
         .add("groundTexture", ground)
+        .add("bananaTexture", banana)
 
         this.loader.load(() => this.doneLoading())
     }
+
     private doneLoading(){
         this.background = new PIXI.Sprite(this.loader.resources["backgroundTexture"].texture!)
         this.background.width = window.screen.width
@@ -39,8 +46,9 @@ export class Game {
         let ground = new Ground(this.loader.resources["groundTexture"].texture!)
         this.grounds.push(ground)
         this.pixi.stage.addChild(ground)
+        let banana = new Banana(this.loader.resources["bananaTexture"].texture!)
 
-      
+
        this.pixi.ticker.add(() => this.update())
     }
    

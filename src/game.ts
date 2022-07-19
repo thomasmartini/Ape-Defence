@@ -12,7 +12,7 @@ export class Game {
     pixi: PIXI.Application 
     background:PIXI.Sprite
     loader:PIXI.Loader
-    banana: Banana
+    bananas: Banana[] = []
     grounds: Ground[] = []
     players: Player[] = []
     collide: boolean
@@ -23,7 +23,7 @@ export class Game {
         this.pixi = new PIXI.Application({ resizeTo: window })
         document.body.appendChild(this.pixi.view)
         this.collide = false
-
+      
     
         this.loader = new PIXI.Loader()
         this.loader
@@ -40,18 +40,22 @@ export class Game {
         this.background.width = window.screen.width
         this.background.height = window.screen.height
         this.pixi.stage.addChild(this.background)
-        let player = new Player((this.loader.resources["monkeyTexture"]).texture!)
+        let player = new Player(this.loader.resources["monkeyTexture"].texture!, this)
         this.players.push(player)
         this.pixi.stage.addChild(player)
         let ground = new Ground(this.loader.resources["groundTexture"].texture!)
         this.grounds.push(ground)
         this.pixi.stage.addChild(ground)
-        let banana = new Banana(this.loader.resources["bananaTexture"].texture!)
-
-
        this.pixi.ticker.add(() => this.update())
     }
-   
+    
+    public spawnBanana(x:number, y:number){
+          let banana = new Banana(this.loader.resources["bananaTexture"].texture!,this, x, y)
+          this.bananas.push(banana)
+          this.pixi.stage.addChild(banana)
+    }
+    
+
     private update() {
         this.players[0].update(this.collide)
         if(this.collision(this.grounds[0], this.players[0])){
@@ -59,7 +63,13 @@ export class Game {
         }else{
             this.collide = false
         }
-
+        for(let banana of this.bananas){
+            banana.update()
+        }
+}
+removeBananaFromGame(banana:Banana) {
+    this.bananas = this.bananas.filter(f => f != banana)
+    banana.destroy()
 }
 collision(sprite1:PIXI.Sprite, sprite2:PIXI.Sprite) {
     const bounds1 = sprite1.getBounds()
@@ -70,5 +80,6 @@ collision(sprite1:PIXI.Sprite, sprite2:PIXI.Sprite) {
         && bounds1.y < bounds2.y + bounds2.height
         && bounds1.y + bounds1.height > bounds2.y;
 }
+
 }
 new Game()

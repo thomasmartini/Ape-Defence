@@ -1,14 +1,18 @@
 import { Monkey } from './monkey'
 import * as PIXI from 'pixi.js'
+import { Game } from './game'
 
 export class Player extends Monkey{
+    game: Game
+    fishTimer:number = 0
     xspeed = 0
     yspeed = 0
-    constructor(texture: PIXI.Texture){
+    constructor(texture: PIXI.Texture, game:Game){
         super(texture)
+       this.game = game
         window.addEventListener("keydown", (e: KeyboardEvent) => this.onKeyDown(e))
         window.addEventListener("keyup", (e: KeyboardEvent) => this.onKeyUp(e))
-        
+       
     }
     public update(collide: boolean) {
         this.x += this.xspeed
@@ -18,9 +22,13 @@ export class Player extends Monkey{
     }else{
         this.y += 5
     }
+    this.fishTimer +=1
     } 
     private shoot(){
-        console.log("shooooot!")
+        if(this.fishTimer >= 80){
+        this.game.spawnBanana(this.x, this.y)
+        this.fishTimer = 0
+        }
     }
     onKeyDown(e: KeyboardEvent): void {
         switch (e.key.toUpperCase()) {

@@ -6,7 +6,7 @@ export class Monkey extends PIXI.Sprite{
         super(texture)
         this.width =  200
         this.height = 160
-        this.x = 500
+
     }
 
 }

@@ -531,6 +531,7 @@ var _player = require("./player");
 var _ground = require("./ground");
 var _banana = require("./banana");
 class Game {
+    bananas = [];
     grounds = [];
     players = [];
     constructor(){
@@ -549,20 +550,30 @@ class Game {
         this.background.width = window.screen.width;
         this.background.height = window.screen.height;
         this.pixi.stage.addChild(this.background);
-        let player = new _player.Player(this.loader.resources["monkeyTexture"].texture);
+        let player = new _player.Player(this.loader.resources["monkeyTexture"].texture, this);
         this.players.push(player);
         this.pixi.stage.addChild(player);
         let ground = new _ground.Ground(this.loader.resources["groundTexture"].texture);
         this.grounds.push(ground);
         this.pixi.stage.addChild(ground);
-        let banana = new _banana.Banana(this.loader.resources["bananaTexture"].texture);
         this.pixi.ticker.add(()=>this.update()
         );
+    }
+    spawnBanana(x, y) {
+        let banana = new _banana.Banana(this.loader.resources["bananaTexture"].texture, this, x, y);
+        this.bananas.push(banana);
+        this.pixi.stage.addChild(banana);
     }
     update() {
         this.players[0].update(this.collide);
         if (this.collision(this.grounds[0], this.players[0])) this.collide = true;
         else this.collide = false;
+        for (let banana of this.bananas)banana.update();
+    }
+    removeBananaFromGame(banana) {
+        this.bananas = this.bananas.filter((f)=>f != banana
+        );
+        banana.destroy();
     }
     collision(sprite1, sprite2) {
         const bounds1 = sprite1.getBounds();
@@ -572,7 +583,7 @@ class Game {
 }
 new Game();
 
-},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./images/background.jpg":"1wZMB","./images/monkey.png":"5zA6A","./player":"6OTSH","./images/ground.png":"lpdmr","./ground":"5uyfC","./banana":"gshE8","./images/banana.png":"kQ7Ne"}],"dsYej":[function(require,module,exports) {
+},{"pixi.js":"dsYej","./images/background.jpg":"1wZMB","./images/monkey.png":"5zA6A","./images/ground.png":"lpdmr","./images/banana.png":"kQ7Ne","./player":"6OTSH","./ground":"5uyfC","./banana":"gshE8","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dsYej":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "utils", ()=>_utils
@@ -37109,6 +37120,12 @@ exports.getOrigin = getOrigin;
 },{}],"5zA6A":[function(require,module,exports) {
 module.exports = require('./helpers/bundle-url').getBundleURL('emE5o') + "monkey.588e8b7a.png" + "?" + Date.now();
 
+},{"./helpers/bundle-url":"lgJ39"}],"lpdmr":[function(require,module,exports) {
+module.exports = require('./helpers/bundle-url').getBundleURL('emE5o') + "ground.2b2f9782.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"kQ7Ne":[function(require,module,exports) {
+module.exports = require('./helpers/bundle-url').getBundleURL('emE5o') + "banana.67ea8802.png" + "?" + Date.now();
+
 },{"./helpers/bundle-url":"lgJ39"}],"6OTSH":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -37116,10 +37133,12 @@ parcelHelpers.export(exports, "Player", ()=>Player
 );
 var _monkey = require("./monkey");
 class Player extends _monkey.Monkey {
+    fishTimer = 0;
     xspeed = 0;
     yspeed = 0;
-    constructor(texture){
+    constructor(texture, game){
         super(texture);
+        this.game = game;
         window.addEventListener("keydown", (e)=>this.onKeyDown(e)
         );
         window.addEventListener("keyup", (e)=>this.onKeyUp(e)
@@ -37131,9 +37150,13 @@ class Player extends _monkey.Monkey {
             this.y += 0;
             this.y += this.yspeed;
         } else this.y += 5;
+        this.fishTimer += 1;
     }
     shoot() {
-        console.log("shooooot!");
+        if (this.fishTimer >= 80) {
+            this.game.spawnBanana(this.x, this.y);
+            this.fishTimer = 0;
+        }
     }
     onKeyDown(e) {
         switch(e.key.toUpperCase()){
@@ -37174,7 +37197,7 @@ class Player extends _monkey.Monkey {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./monkey":"iFV6Q"}],"iFV6Q":[function(require,module,exports) {
+},{"./monkey":"iFV6Q","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iFV6Q":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Monkey", ()=>Monkey
@@ -37185,14 +37208,10 @@ class Monkey extends _pixiJs.Sprite {
         super(texture);
         this.width = 200;
         this.height = 160;
-        this.x = 500;
     }
 }
 
-},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lpdmr":[function(require,module,exports) {
-module.exports = require('./helpers/bundle-url').getBundleURL('emE5o') + "ground.2b2f9782.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"5uyfC":[function(require,module,exports) {
+},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5uyfC":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Ground", ()=>Ground
@@ -37214,14 +37233,20 @@ parcelHelpers.export(exports, "Banana", ()=>Banana
 );
 var _pixiJs = require("pixi.js");
 class Banana extends _pixiJs.Sprite {
-    constructor(texture){
+    constructor(texture, game, x, y){
         super(texture);
+        this.game = game;
+        this.width = 50;
+        this.height = 30;
+        this.x = x;
+        this.y = y + 50;
+    }
+    update() {
+        this.x += -4;
+        if (this.x < 0) this.game.removeBananaFromGame(this);
     }
 }
 
-},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kQ7Ne":[function(require,module,exports) {
-module.exports = require('./helpers/bundle-url').getBundleURL('emE5o') + "banana.67ea8802.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}]},["fpRtI","edeGs"], "edeGs", "parcelRequirea0e5")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","pixi.js":"dsYej"}]},["fpRtI","edeGs"], "edeGs", "parcelRequirea0e5")
 
 //# sourceMappingURL=index.901f85c2.js.map

@@ -6,6 +6,8 @@ import banana from "./images/banana.png"
 import { Player } from './player'
 import { Ground } from './ground'
 import { Banana } from './banana'
+import { Enemy } from './enemy'
+import { UI } from './UI'
 
 
 export class Game {
@@ -15,7 +17,11 @@ export class Game {
     bananas: Banana[] = []
     grounds: Ground[] = []
     players: Player[] = []
+    enemies: Enemy[] = []
     collide: boolean
+    collideEnemy: boolean
+    enemyTimer: number = 0
+    interface: UI 
  
 
     public constructor() {
@@ -46,18 +52,25 @@ export class Game {
         let ground = new Ground(this.loader.resources["groundTexture"].texture!)
         this.grounds.push(ground)
         this.pixi.stage.addChild(ground)
+        this.interface = new UI()
+        this.pixi.stage.addChild(this.interface)
        this.pixi.ticker.add(() => this.update())
-    }
-    
-    public spawnBanana(x:number, y:number){
-          let banana = new Banana(this.loader.resources["bananaTexture"].texture!,this, x, y)
-          this.bananas.push(banana)
-          this.pixi.stage.addChild(banana)
+
     }
     
 
+
     private update() {
         this.players[0].update(this.collide)
+        for(let enemy of this.enemies){         
+             if(this.collision(this.grounds[0], enemy)){
+                this.collideEnemy = true
+            }else{
+                this.collideEnemy = false
+            }
+            enemy.update(this.collideEnemy)
+
+        }
         if(this.collision(this.grounds[0], this.players[0])){
             this.collide = true
         }else{
@@ -66,10 +79,43 @@ export class Game {
         for(let banana of this.bananas){
             banana.update()
         }
+        this.enemyTimer += 1
+        if(this.enemyTimer >= 300){
+            this.spawnEnemy()
+            this.enemyTimer = 0
+        }
+        this.checkCollisions()
+    }
+         private checkCollisions() {
+            for (let banana of this.bananas) {
+                for (let enemy of this.enemies) {
+                    if(this.collision(banana, enemy)){
+                        this.removeEnemyFromGame(enemy)
+                        this.removeBananaFromGame(banana)
+                        this.interface.addScore(10)
+                        break
+                    }
+                }
+            }
+        }
+
+public spawnBanana(x:number, y:number){
+    let banana = new Banana(this.loader.resources["bananaTexture"].texture!,this, x, y)
+    this.bananas.push(banana)
+    this.pixi.stage.addChild(banana)
 }
 removeBananaFromGame(banana:Banana) {
     this.bananas = this.bananas.filter(f => f != banana)
     banana.destroy()
+}
+removeEnemyFromGame(enemy:Enemy) {
+    this.enemies = this.enemies.filter(f => f != enemy)
+    enemy.destroy()
+}
+spawnEnemy(){
+    let enemy = new Enemy(this.loader.resources["monkeyTexture"].texture!,this)
+    this.enemies.push(enemy)
+    this.pixi.stage.addChild(enemy)
 }
 collision(sprite1:PIXI.Sprite, sprite2:PIXI.Sprite) {
     const bounds1 = sprite1.getBounds()
@@ -80,6 +126,5 @@ collision(sprite1:PIXI.Sprite, sprite2:PIXI.Sprite) {
         && bounds1.y < bounds2.y + bounds2.height
         && bounds1.y + bounds1.height > bounds2.y;
 }
-
 }
 new Game()

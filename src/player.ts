@@ -4,7 +4,7 @@ import { Game } from './game'
 
 export class Player extends Monkey{
     game: Game
-    fishTimer:number = 0
+    bananaTimer:number = 0
     xspeed = 0
     yspeed = 0
     constructor(texture: PIXI.Texture, game:Game){
@@ -22,12 +22,12 @@ export class Player extends Monkey{
     }else{
         this.y += 5
     }
-    this.fishTimer +=1
+    this.bananaTimer +=1
     } 
     private shoot(){
-        if(this.fishTimer >= 80){
+        if(this.bananaTimer >= 80){
         this.game.spawnBanana(this.x, this.y)
-        this.fishTimer = 0
+        this.bananaTimer = 0
         }
     }
     onKeyDown(e: KeyboardEvent): void {

@@ -1,6 +1,5 @@
 import * as PIXI from 'pixi.js'
 import { Game } from './game'
-import { Player } from './player'
 
 export class Banana extends PIXI.Sprite{
     game:Game
@@ -19,5 +18,6 @@ export class Banana extends PIXI.Sprite{
         if(this.x < 0){
             this.game.removeBananaFromGame(this)
         }
+        
     }
 }

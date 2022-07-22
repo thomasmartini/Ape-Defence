@@ -530,10 +530,14 @@ var _bananaPngDefault = parcelHelpers.interopDefault(_bananaPng);
 var _player = require("./player");
 var _ground = require("./ground");
 var _banana = require("./banana");
+var _enemy = require("./enemy");
+var _ui = require("./UI");
 class Game {
     bananas = [];
     grounds = [];
     players = [];
+    enemies = [];
+    enemyTimer = 0;
     constructor(){
         this.pixi = new _pixiJs.Application({
             resizeTo: window
@@ -556,24 +560,57 @@ class Game {
         let ground = new _ground.Ground(this.loader.resources["groundTexture"].texture);
         this.grounds.push(ground);
         this.pixi.stage.addChild(ground);
+        this.interface = new _ui.UI();
+        this.pixi.stage.addChild(this.interface);
         this.pixi.ticker.add(()=>this.update()
         );
+    }
+    update() {
+        this.players[0].update(this.collide);
+        for (let enemy of this.enemies){
+            if (this.collision(this.grounds[0], enemy)) this.collideEnemy = true;
+            else this.collideEnemy = false;
+            enemy.update(this.collideEnemy);
+        }
+        if (this.collision(this.grounds[0], this.players[0])) this.collide = true;
+        else this.collide = false;
+        for (let banana of this.bananas)banana.update();
+        this.enemyTimer += 1;
+        if (this.enemyTimer >= 300) {
+            this.spawnEnemy();
+            this.enemyTimer = 0;
+        }
+        this.checkCollisions();
+    }
+    checkCollisions() {
+        for (let banana of this.bananas){
+            for (let enemy of this.enemies)if (this.collision(banana, enemy)) {
+                this.removeEnemyFromGame(enemy);
+                this.removeBananaFromGame(banana);
+                this.interface.addScore(10);
+                break;
+            }
+        }
     }
     spawnBanana(x, y) {
         let banana = new _banana.Banana(this.loader.resources["bananaTexture"].texture, this, x, y);
         this.bananas.push(banana);
         this.pixi.stage.addChild(banana);
     }
-    update() {
-        this.players[0].update(this.collide);
-        if (this.collision(this.grounds[0], this.players[0])) this.collide = true;
-        else this.collide = false;
-        for (let banana of this.bananas)banana.update();
-    }
     removeBananaFromGame(banana) {
         this.bananas = this.bananas.filter((f)=>f != banana
         );
         banana.destroy();
+    }
+    removeEnemyFromGame(enemy) {
+        this.enemies = this.enemies.filter((f)=>f != enemy
+        );
+        enemy.destroy();
+    }
+    spawnEnemy() {
+        let enemy = new _enemy.Enemy(this.loader.resources["monkeyTexture"].texture, this);
+        this.enemies.push(enemy);
+        this.pixi.stage.addChild(enemy);
     }
     collision(sprite1, sprite2) {
         const bounds1 = sprite1.getBounds();
@@ -583,7 +620,7 @@ class Game {
 }
 new Game();
 
-},{"pixi.js":"dsYej","./images/background.jpg":"1wZMB","./images/monkey.png":"5zA6A","./images/ground.png":"lpdmr","./images/banana.png":"kQ7Ne","./player":"6OTSH","./ground":"5uyfC","./banana":"gshE8","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dsYej":[function(require,module,exports) {
+},{"pixi.js":"dsYej","./images/background.jpg":"1wZMB","./images/monkey.png":"5zA6A","./images/ground.png":"lpdmr","./images/banana.png":"kQ7Ne","./player":"6OTSH","./ground":"5uyfC","./banana":"gshE8","./enemy":"e8Rej","./UI":"ef7dT","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dsYej":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "utils", ()=>_utils
@@ -37133,7 +37170,7 @@ parcelHelpers.export(exports, "Player", ()=>Player
 );
 var _monkey = require("./monkey");
 class Player extends _monkey.Monkey {
-    fishTimer = 0;
+    bananaTimer = 0;
     xspeed = 0;
     yspeed = 0;
     constructor(texture, game){
@@ -37150,12 +37187,12 @@ class Player extends _monkey.Monkey {
             this.y += 0;
             this.y += this.yspeed;
         } else this.y += 5;
-        this.fishTimer += 1;
+        this.bananaTimer += 1;
     }
     shoot() {
-        if (this.fishTimer >= 80) {
+        if (this.bananaTimer >= 80) {
             this.game.spawnBanana(this.x, this.y);
-            this.fishTimer = 0;
+            this.bananaTimer = 0;
         }
     }
     onKeyDown(e) {
@@ -37247,6 +37284,61 @@ class Banana extends _pixiJs.Sprite {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","pixi.js":"dsYej"}]},["fpRtI","edeGs"], "edeGs", "parcelRequirea0e5")
+},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"e8Rej":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Enemy", ()=>Enemy
+);
+var _monkey = require("./monkey");
+class Enemy extends _monkey.Monkey {
+    constructor(texture, game){
+        super(texture);
+        this.game = game;
+        this.x = Math.random() * window.screen.width - 100;
+        this.y = 50;
+    }
+    update(collide) {
+        console.log(this.game.enemies);
+        if (collide) {
+            this.y += 0;
+            this.x += 3;
+        } else this.y += 5;
+        if (this.x >= window.screen.width) {
+            this.game.removeEnemyFromGame(this);
+            console.log("destroy");
+        }
+    }
+}
+
+},{"./monkey":"iFV6Q","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ef7dT":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "UI", ()=>UI
+);
+var _pixiJs = require("pixi.js");
+class UI extends _pixiJs.Container {
+    score = 0;
+    constructor(){
+        super();
+        const style = new _pixiJs.TextStyle({
+            fontFamily: 'ArcadeFont',
+            fontSize: 40,
+            fontWeight: 'bold',
+            fill: [
+                '#ffffff'
+            ]
+        });
+        this.scoreField = new _pixiJs.Text(`Score : 0`, style);
+        this.addChild(this.scoreField);
+        this.scoreField.x = 10;
+        this.scoreField.y = 10;
+    }
+    addScore(n) {
+        this.score += n;
+        this.scoreField.text = `Score : ${this.score}`;
+    }
+}
+
+},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["fpRtI","edeGs"], "edeGs", "parcelRequirea0e5")
 
 //# sourceMappingURL=index.901f85c2.js.map

@@ -54,7 +54,7 @@ export class Game {
         this.pixi.stage.addChild(ground)
         this.interface = new UI()
         this.pixi.stage.addChild(this.interface)
-       this.pixi.ticker.add(() => this.update())
+        this.pixi.ticker.add(() => this.update())
 
     }
     

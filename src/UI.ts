@@ -6,7 +6,7 @@ export class UI extends PIXI.Container {
     nameField:PIXI.Text
     score:number = 0
 
-    constructor(){
+    public constructor(){
         super()
         const style = new PIXI.TextStyle({
             fontFamily: 'ArcadeFont',
@@ -21,7 +21,7 @@ export class UI extends PIXI.Container {
         this.scoreField.y = 10
 
     }
-    addScore(n:number) {
+    public addScore(n:number) {
         this.score += n
         this.scoreField.text = `Score : ${this.score}`
     }

@@ -4,23 +4,24 @@ import { Game } from './game'
 
 export class Player extends Monkey{
     game: Game
+    fallSpeed = 0.1
+    keyPressed = false
     bananaTimer:number = 0
     xspeed = 0
-    yspeed = 0
-    constructor(texture: PIXI.Texture, game:Game){
+    public constructor(texture: PIXI.Texture, game:Game){
         super(texture)
-       this.game = game
+        this.game = game
         window.addEventListener("keydown", (e: KeyboardEvent) => this.onKeyDown(e))
         window.addEventListener("keyup", (e: KeyboardEvent) => this.onKeyUp(e))
-       
     }
     public update(collide: boolean) {
         this.x += this.xspeed
+        this.y += this.fallSpeed
+        
     if(collide){
-        this.y += 0
-        this.y += this.yspeed
+       this.fallSpeed = 0
     }else{
-        this.y += 5
+        this.fallSpeed += 0.05
     }
     this.bananaTimer +=1
     } 
@@ -30,7 +31,7 @@ export class Player extends Monkey{
         this.bananaTimer = 0
         }
     }
-    onKeyDown(e: KeyboardEvent): void {
+    private onKeyDown(e: KeyboardEvent): void {
         switch (e.key.toUpperCase()) {
             case " ":
                 this.shoot()
@@ -42,14 +43,9 @@ export class Player extends Monkey{
             case "D":
             case "ARROWRIGHT":
                 this.xspeed = 7
-                break
-            case "W":
-            case "ARROWUP": 
-                this.yspeed = -7
-                break
+                break        
         }
     }
-
     private onKeyUp(e: KeyboardEvent): void {
         switch (e.key.toUpperCase()) {
             case " ":
@@ -63,8 +59,7 @@ export class Player extends Monkey{
             case "W":
             case "S":
             case "ARROWUP":
-            case "ARROWDOWN":
-                this.yspeed = 0
+            case "ARROWDOWN":            
                 break
         }
     }

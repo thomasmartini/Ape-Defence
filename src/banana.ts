@@ -4,7 +4,7 @@ import { Game } from './game'
 export class Banana extends PIXI.Sprite{
     game:Game
    
-    constructor(texture: PIXI.Texture,game: Game, x:number, y: number){
+    public constructor(texture: PIXI.Texture,game: Game, x:number, y: number){
         super(texture)
         this.game = game
             this.width = 50
@@ -13,8 +13,8 @@ export class Banana extends PIXI.Sprite{
             this.y = y + 50
 
     }
-    update(){
-        this.x += -4
+    public update(){
+        this.y -= 5
         if(this.x < 0){
             this.game.removeBananaFromGame(this)
         }

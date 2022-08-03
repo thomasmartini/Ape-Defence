@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
 import bgImage from "./images/background.jpg"
-import Monkeys from "./images/monkey.png"
+import monkey from "./images/monkey.png"
+import bird from"./images/bird.png"
 import ground from "./images/ground.png"
 import banana from "./images/banana.png"
 import { Player } from './player'
@@ -15,8 +16,8 @@ export class Game {
     background:PIXI.Sprite
     loader:PIXI.Loader
     bananas: Banana[] = []
-    grounds: Ground[] = []
-    players: Player[] = []
+    ground: Ground
+    player: Player
     enemies: Enemy[] = []
     collide: boolean
     collideEnemy: boolean
@@ -30,13 +31,13 @@ export class Game {
         document.body.appendChild(this.pixi.view)
         this.collide = false
       
-    
         this.loader = new PIXI.Loader()
         this.loader
         .add("backgroundTexture", bgImage)
-        .add("monkeyTexture", Monkeys)
+        .add("monkeyTexture", monkey)
         .add("groundTexture", ground)
         .add("bananaTexture", banana)
+        .add("birdTexture", bird)
 
         this.loader.load(() => this.doneLoading())
     }
@@ -46,32 +47,30 @@ export class Game {
         this.background.width = window.screen.width
         this.background.height = window.screen.height
         this.pixi.stage.addChild(this.background)
-        let player = new Player(this.loader.resources["monkeyTexture"].texture!, this)
-        this.players.push(player)
-        this.pixi.stage.addChild(player)
-        let ground = new Ground(this.loader.resources["groundTexture"].texture!)
-        this.grounds.push(ground)
-        this.pixi.stage.addChild(ground)
+
+        this.player = new Player(this.loader.resources["monkeyTexture"].texture!, this)
+        this.pixi.stage.addChild(this.player)
+
+        this.ground = new Ground(this.loader.resources["groundTexture"].texture!)
+        this.pixi.stage.addChild(this.ground)
+
         this.interface = new UI()
         this.pixi.stage.addChild(this.interface)
         this.pixi.ticker.add(() => this.update())
 
     }
     
-
-
     private update() {
-        this.players[0].update(this.collide)
+        this.player.update(this.collide)
         for(let enemy of this.enemies){         
-             if(this.collision(this.grounds[0], enemy)){
+             if(this.collision(this.ground, enemy)){
                 this.collideEnemy = true
             }else{
                 this.collideEnemy = false
             }
-            enemy.update(this.collideEnemy)
-
+            enemy.update()
         }
-        if(this.collision(this.grounds[0], this.players[0])){
+        if(this.collision(this.ground, this.player)){
             this.collide = true
         }else{
             this.collide = false
@@ -104,20 +103,20 @@ public spawnBanana(x:number, y:number){
     this.bananas.push(banana)
     this.pixi.stage.addChild(banana)
 }
-removeBananaFromGame(banana:Banana) {
+public removeBananaFromGame(banana:Banana) {
     this.bananas = this.bananas.filter(f => f != banana)
     banana.destroy()
 }
-removeEnemyFromGame(enemy:Enemy) {
+public removeEnemyFromGame(enemy:Enemy) {
     this.enemies = this.enemies.filter(f => f != enemy)
     enemy.destroy()
 }
-spawnEnemy(){
-    let enemy = new Enemy(this.loader.resources["monkeyTexture"].texture!,this)
+private spawnEnemy(){
+    let enemy = new Enemy(this.loader.resources["birdTexture"].texture!,this)
     this.enemies.push(enemy)
     this.pixi.stage.addChild(enemy)
 }
-collision(sprite1:PIXI.Sprite, sprite2:PIXI.Sprite) {
+private collision(sprite1:PIXI.Sprite, sprite2:PIXI.Sprite) {
     const bounds1 = sprite1.getBounds()
     const bounds2 = sprite2.getBounds()
 

@@ -523,6 +523,8 @@ var _backgroundJpg = require("./images/background.jpg");
 var _backgroundJpgDefault = parcelHelpers.interopDefault(_backgroundJpg);
 var _monkeyPng = require("./images/monkey.png");
 var _monkeyPngDefault = parcelHelpers.interopDefault(_monkeyPng);
+var _birdPng = require("./images/bird.png");
+var _birdPngDefault = parcelHelpers.interopDefault(_birdPng);
 var _groundPng = require("./images/ground.png");
 var _groundPngDefault = parcelHelpers.interopDefault(_groundPng);
 var _bananaPng = require("./images/banana.png");
@@ -534,8 +536,6 @@ var _enemy = require("./enemy");
 var _ui = require("./UI");
 class Game {
     bananas = [];
-    grounds = [];
-    players = [];
     enemies = [];
     enemyTimer = 0;
     constructor(){
@@ -545,7 +545,7 @@ class Game {
         document.body.appendChild(this.pixi.view);
         this.collide = false;
         this.loader = new _pixiJs.Loader();
-        this.loader.add("backgroundTexture", _backgroundJpgDefault.default).add("monkeyTexture", _monkeyPngDefault.default).add("groundTexture", _groundPngDefault.default).add("bananaTexture", _bananaPngDefault.default);
+        this.loader.add("backgroundTexture", _backgroundJpgDefault.default).add("monkeyTexture", _monkeyPngDefault.default).add("groundTexture", _groundPngDefault.default).add("bananaTexture", _bananaPngDefault.default).add("birdTexture", _birdPngDefault.default);
         this.loader.load(()=>this.doneLoading()
         );
     }
@@ -554,25 +554,23 @@ class Game {
         this.background.width = window.screen.width;
         this.background.height = window.screen.height;
         this.pixi.stage.addChild(this.background);
-        let player = new _player.Player(this.loader.resources["monkeyTexture"].texture, this);
-        this.players.push(player);
-        this.pixi.stage.addChild(player);
-        let ground = new _ground.Ground(this.loader.resources["groundTexture"].texture);
-        this.grounds.push(ground);
-        this.pixi.stage.addChild(ground);
+        this.player = new _player.Player(this.loader.resources["monkeyTexture"].texture, this);
+        this.pixi.stage.addChild(this.player);
+        this.ground = new _ground.Ground(this.loader.resources["groundTexture"].texture);
+        this.pixi.stage.addChild(this.ground);
         this.interface = new _ui.UI();
         this.pixi.stage.addChild(this.interface);
         this.pixi.ticker.add(()=>this.update()
         );
     }
     update() {
-        this.players[0].update(this.collide);
+        this.player.update(this.collide);
         for (let enemy of this.enemies){
-            if (this.collision(this.grounds[0], enemy)) this.collideEnemy = true;
+            if (this.collision(this.ground, enemy)) this.collideEnemy = true;
             else this.collideEnemy = false;
-            enemy.update(this.collideEnemy);
+            enemy.update();
         }
-        if (this.collision(this.grounds[0], this.players[0])) this.collide = true;
+        if (this.collision(this.ground, this.player)) this.collide = true;
         else this.collide = false;
         for (let banana of this.bananas)banana.update();
         this.enemyTimer += 1;
@@ -608,7 +606,7 @@ class Game {
         enemy.destroy();
     }
     spawnEnemy() {
-        let enemy = new _enemy.Enemy(this.loader.resources["monkeyTexture"].texture, this);
+        let enemy = new _enemy.Enemy(this.loader.resources["birdTexture"].texture, this);
         this.enemies.push(enemy);
         this.pixi.stage.addChild(enemy);
     }
@@ -620,7 +618,7 @@ class Game {
 }
 new Game();
 
-},{"pixi.js":"dsYej","./images/background.jpg":"1wZMB","./images/monkey.png":"5zA6A","./images/ground.png":"lpdmr","./images/banana.png":"kQ7Ne","./player":"6OTSH","./ground":"5uyfC","./banana":"gshE8","./enemy":"e8Rej","./UI":"ef7dT","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dsYej":[function(require,module,exports) {
+},{"pixi.js":"dsYej","./images/background.jpg":"1wZMB","./images/ground.png":"lpdmr","./images/banana.png":"kQ7Ne","./player":"6OTSH","./ground":"5uyfC","./banana":"gshE8","./enemy":"e8Rej","./UI":"ef7dT","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./images/bird.png":"4hOhI","./images/monkey.png":"5zA6A"}],"dsYej":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "utils", ()=>_utils
@@ -37154,10 +37152,7 @@ exports.getBundleURL = getBundleURLCached;
 exports.getBaseURL = getBaseURL;
 exports.getOrigin = getOrigin;
 
-},{}],"5zA6A":[function(require,module,exports) {
-module.exports = require('./helpers/bundle-url').getBundleURL('emE5o') + "monkey.588e8b7a.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"lpdmr":[function(require,module,exports) {
+},{}],"lpdmr":[function(require,module,exports) {
 module.exports = require('./helpers/bundle-url').getBundleURL('emE5o') + "ground.2b2f9782.png" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"lgJ39"}],"kQ7Ne":[function(require,module,exports) {
@@ -37170,9 +37165,10 @@ parcelHelpers.export(exports, "Player", ()=>Player
 );
 var _monkey = require("./monkey");
 class Player extends _monkey.Monkey {
+    fallSpeed = 0.1;
+    keyPressed = false;
     bananaTimer = 0;
     xspeed = 0;
-    yspeed = 0;
     constructor(texture, game){
         super(texture);
         this.game = game;
@@ -37183,10 +37179,9 @@ class Player extends _monkey.Monkey {
     }
     update(collide) {
         this.x += this.xspeed;
-        if (collide) {
-            this.y += 0;
-            this.y += this.yspeed;
-        } else this.y += 5;
+        this.y += this.fallSpeed;
+        if (collide) this.fallSpeed = 0;
+        else this.fallSpeed += 0.05;
         this.bananaTimer += 1;
     }
     shoot() {
@@ -37208,10 +37203,6 @@ class Player extends _monkey.Monkey {
             case "ARROWRIGHT":
                 this.xspeed = 7;
                 break;
-            case "W":
-            case "ARROWUP":
-                this.yspeed = -7;
-                break;
         }
     }
     onKeyUp(e) {
@@ -37228,7 +37219,6 @@ class Player extends _monkey.Monkey {
             case "S":
             case "ARROWUP":
             case "ARROWDOWN":
-                this.yspeed = 0;
                 break;
         }
     }
@@ -37279,7 +37269,7 @@ class Banana extends _pixiJs.Sprite {
         this.y = y + 50;
     }
     update() {
-        this.x += -4;
+        this.y -= 5;
         if (this.x < 0) this.game.removeBananaFromGame(this);
     }
 }
@@ -37295,18 +37285,11 @@ class Enemy extends _monkey.Monkey {
         super(texture);
         this.game = game;
         this.x = Math.random() * window.screen.width - 100;
-        this.y = 50;
+        this.y = -60;
     }
-    update(collide) {
-        console.log(this.game.enemies);
-        if (collide) {
-            this.y += 0;
-            this.x += 3;
-        } else this.y += 5;
-        if (this.x >= window.screen.width) {
-            this.game.removeEnemyFromGame(this);
-            console.log("destroy");
-        }
+    update() {
+        this.y += 3;
+        if (this.y >= window.screen.height) this.game.removeEnemyFromGame(this);
     }
 }
 
@@ -37339,6 +37322,12 @@ class UI extends _pixiJs.Container {
     }
 }
 
-},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["fpRtI","edeGs"], "edeGs", "parcelRequirea0e5")
+},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4hOhI":[function(require,module,exports) {
+module.exports = require('./helpers/bundle-url').getBundleURL('emE5o') + "bird.2ceb7b03.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"5zA6A":[function(require,module,exports) {
+module.exports = require('./helpers/bundle-url').getBundleURL('emE5o') + "monkey.588e8b7a.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}]},["fpRtI","edeGs"], "edeGs", "parcelRequirea0e5")
 
 //# sourceMappingURL=index.901f85c2.js.map
